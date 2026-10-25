@@ -1,0 +1,10 @@
+.DS_Store
+# El material es de cada quien: no se sube al repo.
+material/*/*
+!material/*/.gitkeep
+proyectos/**/*
+!proyectos/.gitkeep
+herramientas/modelos/
+.venv/
+__pycache__/
+herramientas/.voz-ia/

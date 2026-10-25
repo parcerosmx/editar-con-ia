@@ -1,0 +1,11 @@
+{
+  "carpeta": "material/02-a-camara",
+  "salida": "proyectos/mi-primer-video/base-v1.mp4",
+  "lut": null,
+  "partes": [
+    {"parte": "gancho", "elegida": "IMG_0101.MOV", "suplentes": ["IMG_0099.MOV"]},
+    {"parte": "el plato", "elegida": "IMG_0104.MOV", "quitar": [[4.2, 5.0]]},
+    {"parte": "el giro", "elegida": "IMG_0107.MOV", "respetar": [2.0, 2.6]},
+    {"parte": "invitación", "elegida": "IMG_0110.MOV", "encima": false}
+  ]
+}

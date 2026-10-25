@@ -1,0 +1,15 @@
+# Vocabulario para Whisper: se le pasa como contexto antes de transcribir.
+#
+# · Frases con puntuación, no una lista suelta: así transcribe con comas y tildes.
+# · Las muletillas del final le enseñan a no borrarlas (por defecto las limpia).
+# · Corto: con más de ~60 palabras empieza a ignorarlo o a inventar con él.
+# · Si en una revisión escribe mal un nombre que se repite, se agrega aquí.
+# ⚠️ Sólo nombres y palabras, NUNCA frases con postura («somos…», «no somos…»):
+#   el contexto empuja la transcripción hacia lo que dice, y eso es justo lo que
+#   se está revisando.
+# Las líneas que empiezan con # no se le pasan.
+#
+# Ejemplo (bórrale el # y cámbialo por lo tuyo):
+# <Nombre de tu negocio>, en <tu colonia>, <tu ciudad>.
+# <plato 1>, <plato 2>, <plato 3>.
+# TikTok, reel. Eh, este, o sea, pues.

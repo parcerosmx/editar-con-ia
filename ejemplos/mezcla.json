@@ -1,0 +1,12 @@
+{
+  "video": "proyectos/mi-primer-video/con-subtitulos.mp4",
+  "margen_db": 10,
+  "efectos": [
+    {"archivo": "material/03-musica-y-efectos/risers/riser-01-referencia-1.6s.wav", "t": 0.0, "tipo": "riser", "nota": "arranque: el punto alto cae al terminar el gancho"},
+    {"archivo": "material/03-musica-y-efectos/efectos/woosh-1.wav", "t": 3.9, "nota": "cambio fuerte de toma"},
+    {"archivo": "material/03-musica-y-efectos/efectos/ding-1.wav", "t": 12.4, "tipo": "ding", "nota": "el dato clave (siempre ≥24 dB bajo la voz)"}
+  ],
+  "musica": {"archivo": "material/03-musica-y-efectos/musica/cancion-1.mp3", "desde": 2.9, "t_in": 0.0, "t_out": 29.8,
+             "bajo_voz_db": 18, "fade_in": 1.6, "curva": "exp", "fade_out": 1.0},
+  "lufs_final": -14
+}

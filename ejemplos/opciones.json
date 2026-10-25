@@ -1,0 +1,9 @@
+{
+  "ideas": [
+    {"id": "queso", "titulo": "El queso que se estira",
+     "ops": [["material/01-tomas-de-apoyo/IMG_0412.MOV", 3.2, "queso de cerca, se estira"],
+             ["material/01-tomas-de-apoyo/IMG_0415.MOV", 1.0, "mordida con queso", 0.3]]},
+    {"id": "local", "titulo": "El local lleno",
+     "ops": [["material/01-tomas-de-apoyo/IMG_0420.MOV", 0.5, "mesas llenas, de noche"]]}
+  ]
+}

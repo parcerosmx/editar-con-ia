@@ -1,0 +1,12 @@
+{
+  "nombre": "ya-abrimos",
+  "tomas": [
+    {"archivo": "material/01-tomas-de-apoyo/IMG_0412.MOV", "t": 3.2, "beats": 4},
+    {"archivo": "material/01-tomas-de-apoyo/IMG_0415.MOV", "t": 1.0, "beats": 4, "x": 0.3},
+    {"archivo": "material/01-tomas-de-apoyo/IMG_0420.MOV", "t": 0.5, "beats": 4, "zoom": 1.1}
+  ],
+  "cancion": {"archivo": "material/03-musica-y-efectos/musica/cancion-1.mp3", "desde": 12.0},
+  "texto": {"lineas": ["Ya abrimos", "hoy hay arepas"], "y": 300, "tam": 78},
+  "cierre": {"beats": 4, "lineas": ["Lunes a sábado"], "imagen": null},
+  "lut": null
+}
