@@ -1,0 +1,4 @@
+# Los scripts de bash, siempre con fin de línea de Unix (si no, bash falla en la Mac).
+*.sh  text eol=lf
+# Los de PowerShell, con fin de línea de Windows (llevan BOM UTF-8 para que PowerShell 5.1 lea los acentos).
+*.ps1 text eol=crlf

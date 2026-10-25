@@ -1,0 +1,68 @@
+# Prueba de verdad en computadoras limpias de GitHub: instala con el mismo instalador que usa el dueño y corre
+# el chequeo de punta a punta (13 pasos) en Windows y en Mac.
+#
+# Para no bajar 1,6 GB en cada prueba, aquí se usa un modelo de Whisper chico (WHISPER_MODELO_NOMBRE=ggml-base.bin,
+# ~150 MB) y se guarda entre corridas. En la computadora del dueño siempre se baja large-v3-turbo.
+name: prueba
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prueba:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    env:
+      WHISPER_MODELO_NOMBRE: ggml-base.bin
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      HOMEBREW_NO_INSTALL_CLEANUP: "1"
+      HOMEBREW_NO_ENV_HINTS: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Modelo de Whisper guardado
+        uses: actions/cache@v4
+        with:
+          path: herramientas/modelos
+          key: whisper-${{ runner.os }}-ggml-base-v1
+
+      - name: Instalar (Windows, el mismo comando que usa Claude)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $PSVersionTable.PSVersion.ToString()
+          powershell -ExecutionPolicy Bypass -File herramientas\instalar.ps1 -Si
+          exit $LASTEXITCODE
+
+      - name: Chequeo (Windows, desde Git Bash como lo corre Claude Code)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: powershell -ExecutionPolicy Bypass -File herramientas/chequeo.ps1
+
+      - name: Instalar (Mac)
+        if: runner.os == 'macOS'
+        run: bash herramientas/instalar.sh --si
+
+      - name: Chequeo (Mac)
+        if: runner.os == 'macOS'
+        run: bash herramientas/chequeo.sh
+
+      - name: Guardar los registros si algo falló
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chequeo-${{ runner.os }}
+          path: |
+            proyectos/_chequeo/*.txt
+            proyectos/_chequeo/*.json
+          if-no-files-found: ignore
