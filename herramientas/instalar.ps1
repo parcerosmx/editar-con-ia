@@ -33,6 +33,7 @@ if ($Ayuda) {
 }
 
 function Ok($t)   { Write-Output "✅ $t" }
+function Depurar($t) { if ($env:EDITAR_DEPURAR) { [Console]::Error.WriteLine("   [depurar] $t") } }
 function Nota($t) { Write-Output "   $t" }
 function Mal($t)  { Write-Output "❌ $t" }
 
@@ -72,8 +73,9 @@ function Python-Real {
         if (-not $cmd) { continue }
         if ($cmd.Source -like '*WindowsApps*') { continue }
         $resto = @($i | Select-Object -Skip 1)
-        $v = & $cmd.Source @resto -c "import sys; print('%d.%d' % sys.version_info[:2]) if sys.version_info >= (3, 9) else sys.exit(1)" 2>$null
-        if ($LASTEXITCODE -eq 0 -and $v) { return ,(@($cmd.Source) + $resto) }
+        & $cmd.Source @resto -c 'import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)' 2>$null | Out-Null
+        Depurar "python: $($cmd.Source) $resto → $LASTEXITCODE"
+        if ($LASTEXITCODE -eq 0) { return ,(@($cmd.Source) + $resto) }
     }
     return $null
 }
@@ -101,10 +103,15 @@ function Bajar($url, $destino) {
     $part = "$destino.part"
     $curl = Get-Command 'curl.exe' -ErrorAction SilentlyContinue
     if ($curl) {
-        & $curl.Source -L --fail --retry 3 -C - -o $part $url
-        if ($LASTEXITCODE -ne 0) { return $false }
+        & $curl.Source -L --fail --retry 3 --progress-bar -C - -o $part $url | Out-Null
+        Depurar "curl $url → $LASTEXITCODE"
+        if ($LASTEXITCODE -ne 0) {
+            # si curl no pudo (proxy, antivirus…), se intenta una vez con Invoke-WebRequest, desde cero
+            Remove-Item $part -Force -ErrorAction SilentlyContinue
+            try { Invoke-WebRequest -Uri $url -OutFile $part -UseBasicParsing } catch { Depurar "$_"; return $false }
+        }
     } else {
-        try { Invoke-WebRequest -Uri $url -OutFile $part -UseBasicParsing } catch { return $false }
+        try { Invoke-WebRequest -Uri $url -OutFile $part -UseBasicParsing } catch { Depurar "$_"; return $false }
     }
     Move-Item -Force $part $destino
     return $true
@@ -194,7 +201,7 @@ if (-not $whisper) {
         $rel = Invoke-RestMethod -Uri 'https://api.github.com/repos/ggml-org/whisper.cpp/releases/latest' -Headers $cab -UseBasicParsing
         $url = ($rel.assets | Where-Object { $_.name -eq 'whisper-bin-x64.zip' } | Select-Object -First 1).browser_download_url
         if ($url) { Nota "versión $($rel.tag_name)" }
-    } catch { }
+    } catch { Depurar "API de GitHub: $_" }
     if (-not $url) { $url = 'https://github.com/ggml-org/whisper.cpp/releases/latest/download/whisper-bin-x64.zip' }
     $zip = Join-Path $WHISPER_DIR 'whisper-bin-x64.zip'
     if (-not (Bajar $url $zip)) { Mal 'No se pudo bajar whisper.cpp (¿internet?). Vuelve a correr esto.'; exit 1 }
