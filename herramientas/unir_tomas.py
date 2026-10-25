@@ -87,7 +87,7 @@ def main():
         extra = ["--proteger", f"{p['respetar'][0]}-{p['respetar'][1]}:9"] if p.get("respetar") else []
         r = subprocess.run([sys.executable, str(AQUI / "quitar_pausas.py"), src, sp, "--aire", str(cfg.get("aire", 0.015)),
                             "--min", str(cfg.get("min", 0.08)), "--borde", str(cfg.get("borde", 22)), *extra],
-                           capture_output=True, text=True)
+                           capture_output=True, text=True, encoding="utf-8", errors="replace")
         if r.returncode:
             sys.exit(f"✗ {p['elegida']}: {r.stderr[-400:]}")
         db, ref, xx = energia_de(sp, tmp)
@@ -137,7 +137,7 @@ def main():
         fc.append(f"[{last}][v{k}]overlay=0:0:eof_action=repeat:enable='gte(t,{Q(st[k]):.4f})'[o{k}]")
         last = f"o{k}"
     if cfg.get("lut"):
-        fc.append(f"[{last}]lut3d=file='{ruta(cfg['lut'])}',format=yuv420p[col]")
+        fc.append(f"[{last}]lut3d=file='{comun.ruta_filtro(ruta(cfg['lut']))}',format=yuv420p[col]")
         last = "col"
     fc.append(f"{mix}amix=inputs={len(segs)}:normalize=0:duration=longest[a]")
     OUT.parent.mkdir(parents=True, exist_ok=True)

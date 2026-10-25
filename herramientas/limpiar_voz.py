@@ -40,9 +40,9 @@ def main():
     base = Path(tmp) / "voz.wav"
     comun.ff("-i", a.toma, "-vn", "-af", cadena, "-ac", "1", "-ar", "48000", base)
     if a.ia:
-        py = ENTORNO_IA / "bin" / "python"
+        py = ENTORNO_IA / ("Scripts/python.exe" if comun.ES_WINDOWS else "bin/python")
         if not py.exists():
-            sys.exit("✗ Falta la voz IA. Corre:  bash herramientas/instalar.sh --voz")
+            sys.exit("✗ Falta la voz IA (por ahora sólo en Mac). Corre:  bash herramientas/instalar.sh --voz")
         sr = Path(tmp) / "voz-sr.wav"
         codigo = ("from clearvoice import ClearVoice\n"
                   "cv = ClearVoice(task='speech_super_resolution', model_names=['MossFormer2_SR_48K'])\n"

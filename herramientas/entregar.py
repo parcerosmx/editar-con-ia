@@ -22,13 +22,13 @@ import comun  # noqa: E402
 
 
 def md5(ruta, mapa):
-    return subprocess.run(["ffmpeg", "-v", "error", "-i", str(ruta), "-map", mapa, "-f", "md5", "-"],
-                          capture_output=True, text=True).stdout.strip()
+    return subprocess.run([comun.ffmpeg(), "-v", "error", "-i", str(ruta), "-map", mapa, "-f", "md5", "-"],
+                          capture_output=True, text=True, encoding="utf-8", errors="replace").stdout.strip()
 
 
 def lufs(ruta):
-    r = subprocess.run(["ffmpeg", "-v", "info", "-i", str(ruta), "-af", "ebur128", "-f", "null", "-"],
-                       capture_output=True, text=True).stderr
+    r = subprocess.run([comun.ffmpeg(), "-v", "info", "-i", str(ruta), "-af", "ebur128", "-f", "null", "-"],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace").stderr
     i = re.findall(r"I:\s+(-?[\d.]+) LUFS", r)
     return float(i[-1]) if i else None
 

@@ -32,8 +32,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import comun  # noqa: E402
 
 W, H, FPS = 1080, 1920, 30
-FUENTES = ["/System/Library/Fonts/Supplemental/Arial Rounded Bold.ttf",
-           "/System/Library/Fonts/Supplemental/Arial Bold.ttf", "/System/Library/Fonts/Helvetica.ttc"]
+FUENTE = comun.fuente()   # Arial Rounded Bold en Mac; Arial Bold en Windows
 
 
 def ruta(p):
@@ -45,7 +44,7 @@ def pulso(archivo, desde, bpm_max=150, largo=40):
     """Tempo y fase de la canción (flujo espectral + autocorrelación). Devuelve (bpm, segundos por golpe, fase)."""
     import numpy as np
     sr, hop = 22050, 512
-    pcm = subprocess.run(["ffmpeg", "-v", "error", "-ss", str(desde), "-t", str(largo), "-i", str(archivo), "-ac", "1",
+    pcm = subprocess.run([comun.ffmpeg(), "-v", "error", "-ss", str(desde), "-t", str(largo), "-i", str(archivo), "-ac", "1",
                           "-ar", str(sr), "-f", "f32le", "-"], capture_output=True, check=True).stdout
     y = np.frombuffer(pcm, np.float32)
     n = (len(y) - 2048) // hop
@@ -67,9 +66,9 @@ def pulso(archivo, desde, bpm_max=150, largo=40):
 
 def cortes_en(f, t, d):
     pre, fi = comun.entrada(f)
-    r = subprocess.run(["ffmpeg", "-v", "info", *pre, "-ss", f"{t:.3f}", "-t", f"{d:.3f}", "-i", str(f), "-vf",
+    r = subprocess.run([comun.ffmpeg(), "-v", "info", *pre, "-ss", f"{t:.3f}", "-t", f"{d:.3f}", "-i", str(f), "-vf",
                         f"{fi},scale=160:-2,select='gt(scene,0.25)',showinfo", "-an", "-f", "null", "-"],
-                       capture_output=True, text=True).stderr
+                       capture_output=True, text=True, encoding="utf-8", errors="replace").stderr
     return [t + float(x) for x in re.findall(r"pts_time:([0-9.]+)", r) if 0.05 < float(x) < d - 0.05]
 
 
@@ -91,7 +90,7 @@ def capa_texto(lineas, y, tam, extra=None):
     if not lineas:
         return im
     d = ImageDraw.Draw(im)
-    f = ImageFont.truetype(next(x for x in FUENTES if Path(x).exists()), tam)
+    f = ImageFont.truetype(FUENTE, tam)
     for i, l in enumerate(lineas):
         w = d.textlength(l, font=f)
         x0, y0 = (W - w) / 2, y + i * int(tam * 1.35)
@@ -128,7 +127,7 @@ def main():
     frames = np.round(marcas * FPS).astype(int)
     dur = frames[-1] / FPS
     print(f"{nombre}: {bpm:.0f} bpm, un golpe cada {per:.3f} s · {dur:.1f} s")
-    lut = f",lut3d=file='{ruta(sp['lut'])}'" if sp.get("lut") else ""
+    lut = f",lut3d=file='{comun.ruta_filtro(ruta(sp['lut']))}'" if sp.get("lut") else ""
     tomas = list(sp["tomas"]) + ([cierre.get("toma", sp["tomas"][-1])] if cierre else [])
     segs = []
     for i, tm in enumerate(tomas):
@@ -152,7 +151,7 @@ def main():
         segs.append(o)
         print(f"   {marcas[i]:5.2f}s  {f.name[:30]:30s} entra en {t:5.2f}  {nfr / FPS:.2f}s")
     lista = Path(tmp) / "lista.txt"
-    lista.write_text("".join(f"file '{s}'\n" for s in segs))
+    lista.write_text("".join(f"file '{Path(s).as_posix()}'\n" for s in segs), encoding="utf-8")
     base = Path(tmp) / "base.mp4"
     comun.ff("-f", "concat", "-safe", "0", "-i", lista, "-c", "copy", base)
     tx = sp.get("texto") or {}

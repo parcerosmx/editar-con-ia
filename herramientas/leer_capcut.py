@@ -21,7 +21,9 @@ import statistics as st
 import sys
 from pathlib import Path
 
-CAPCUT = Path.home() / "Movies" / "CapCut" / "User Data" / "Projects" / "com.lveditor.draft"
+CAPCUT = (Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local")) / "CapCut" / "User Data" / "Projects"
+          / "com.lveditor.draft" if os.name == "nt"     # Windows (sin probar: puede guardar distinto)
+          else Path.home() / "Movies" / "CapCut" / "User Data" / "Projects" / "com.lveditor.draft")
 
 
 def info(p):
@@ -38,11 +40,11 @@ def main():
     a = ap.parse_args()
     D = a.carpeta
     if not os.path.isdir(D):
-        sys.exit(f"✗ No encontré la carpeta de proyectos de CapCut ({D}). ¿Está instalado CapCut para Mac?")
+        sys.exit(f"✗ No encontré la carpeta de proyectos de CapCut ({D}). ¿Está instalado CapCut de escritorio?")
     cands = [p for p in glob.glob(os.path.join(D, "*")) if os.path.isdir(p) and info(p)]
     nombres = {}
     try:
-        for d in json.load(open(os.path.join(D, "root_meta_info.json"))).get("all_draft_store", []):
+        for d in json.load(open(os.path.join(D, "root_meta_info.json"), encoding="utf-8")).get("all_draft_store", []):
             nombres[os.path.basename(d.get("draft_fold_path", ""))] = d.get("draft_name", "")
     except Exception:
         pass
@@ -53,7 +55,7 @@ def main():
         sys.exit("✗ No encontré ese proyecto en CapCut.")
     p = max(cands, key=lambda x: os.path.getmtime(info(x)))
     f = info(p)
-    j = json.load(open(f))
+    j = json.load(open(f, encoding="utf-8"))
     S = lambda us: us / 1e6
     mat = {}
     for k, v in j.get("materials", {}).items():
@@ -112,7 +114,7 @@ def main():
         print(f"\nResumen: {len(largos)} piezas de video · mediana {st.median(largos):.2f} s"
               + (f" · encimas {st.median(encimados):.2f} s al cambiar de toma ({len(encimados)} veces)" if encimados else ""))
     if a.json:
-        Path(a.json).write_text(json.dumps(out, ensure_ascii=False, indent=1))
+        Path(a.json).write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
         print("→", a.json)
 
 

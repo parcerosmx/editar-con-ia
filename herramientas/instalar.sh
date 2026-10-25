@@ -1,5 +1,6 @@
 #!/bin/bash
 # Instala lo que necesita «Editar con IA» en una Mac. Se puede correr las veces que sea: lo que ya está, se salta.
+# (En Windows es otro: powershell -ExecutionPolicy Bypass -File herramientas\instalar.ps1)
 #
 #   bash herramientas/instalar.sh            pregunta antes de instalar cada cosa
 #   bash herramientas/instalar.sh --si       instala sin preguntar (ya dijiste que sí)
@@ -23,12 +24,14 @@ for a in "$@"; do
   case "$a" in
     --si|-y) SI=1 ;;
     --voz) VOZ=1 ;;
-    --ayuda|-h|--help) sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    --ayuda|-h|--help) sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "No conozco la opción $a (usa --ayuda)"; exit 1 ;;
   esac
 done
 
-MODELO="ggml-large-v3-turbo.bin"
+# WHISPER_MODELO_NOMBRE=ggml-base.bin cambia el modelo (lo usa la prueba automática de GitHub, para no bajar 1,6 GB)
+MODELO="${WHISPER_MODELO_NOMBRE:-ggml-large-v3-turbo.bin}"
+case "$MODELO" in *large*) MINIMO=1500000000 ;; *) MINIMO=30000000 ;; esac
 URL_MODELO="https://huggingface.co/ggerganov/whisper.cpp/resolve/main/$MODELO"
 
 ok()   { echo "✅ $*"; }
@@ -44,7 +47,7 @@ preguntar() {   # preguntar "texto" → 0 si sí
   case "$r" in s|S|si|SI|sí|Sí) return 0 ;; *) return 1 ;; esac
 }
 
-[ "$(uname)" = "Darwin" ] || { mal "Esto es para Mac."; exit 1; }
+[ "$(uname)" = "Darwin" ] || { mal "Esto es para Mac. En Windows: powershell -ExecutionPolicy Bypass -File herramientas\\instalar.ps1"; exit 1; }
 echo "Editar con IA · instalación en $RAIZ"
 echo
 
@@ -81,7 +84,7 @@ fi
 # 3 · Modelo de Whisper (español)
 mkdir -p herramientas/modelos
 DEST="herramientas/modelos/$MODELO"
-if [ -s "$DEST" ] && [ "$(stat -L -f%z "$DEST" 2>/dev/null || echo 0)" -gt 1500000000 ]; then
+if [ -s "$DEST" ] && [ "$(stat -L -f%z "$DEST" 2>/dev/null || echo 0)" -gt "$MINIMO" ]; then
   ok "modelo de Whisper ($MODELO)"
 elif [ -s "$HOME/.cache/whisper.cpp/$MODELO" ]; then
   ln -sf "$HOME/.cache/whisper.cpp/$MODELO" "$DEST"

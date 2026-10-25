@@ -64,13 +64,13 @@ def escribir_cube(M, ruta, n=33):
         for gg in g:
             for v in np.clip(rasgos(np.stack([g, np.full(n, gg), np.full(n, b)], 1)) @ M, 0, 1):
                 lineas.append(f"{v[0]:.5f} {v[1]:.5f} {v[2]:.5f}")
-    Path(ruta).write_text("\n".join(lineas) + "\n")
+    Path(ruta).write_text("\n".join(lineas) + "\n", encoding="utf-8")
 
 
 def detalle(f, vf, dur):
     import numpy as np
     import subprocess
-    o = subprocess.run(["ffmpeg", "-v", "error", "-ss", str(dur * 0.2), "-t", str(min(12, dur * 0.6)), "-i", str(f),
+    o = subprocess.run([comun.ffmpeg(), "-v", "error", "-ss", str(dur * 0.2), "-t", str(min(12, dur * 0.6)), "-i", str(f),
                         "-vf", vf + ",scale=540:960,format=gray", "-f", "rawvideo", "-"], capture_output=True).stdout
     a = np.frombuffer(o, np.uint8).reshape(-1, 960, 540).astype(float)
     return np.abs(np.diff(a, axis=1)).mean() + np.abs(np.diff(a, axis=2)).mean()
@@ -105,7 +105,7 @@ def main():
     ref = detalle(a.despues, "null", d1)
     mejor = (9.0, 0.0)
     for amt in (0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8):
-        vf = f"lut3d=file='{salida}'" + (f",unsharp=5:5:{amt}:5:5:0" if amt else "")
+        vf = f"lut3d=file='{comun.ruta_filtro(salida)}'" + (f",unsharp=5:5:{amt}:5:5:0" if amt else "")
         mejor = min(mejor, (abs(detalle(a.antes, vf, d0) / ref - 1), amt))
     la, lb = O.mean(-1), C.mean(-1)
     cambio = {
@@ -114,10 +114,10 @@ def main():
         "saturacion": round(float((C.max(-1) - C.min(-1)).mean() - (O.max(-1) - O.min(-1)).mean()), 3),
         "calidez": round(float((C[..., 0] - C[..., 2]).mean() - (O[..., 0] - O[..., 2]).mean()), 3),
     }
-    filtro = f"lut3d=file='{salida}'" + (f",unsharp=5:5:{mejor[1]}:5:5:0" if mejor[1] else "")
+    filtro = f"lut3d=file='{comun.ruta_filtro(salida)}'" + (f",unsharp=5:5:{mejor[1]}:5:5:0" if mejor[1] else "")
     info = {"lut": str(salida), "unsharp": mejor[1], "error_sin_corregir": round(e0, 1),
             "error_con_tu_color_en_cuadros_no_vistos": round(e_nv, 1), "cambio": cambio, "filtro_ffmpeg": filtro}
-    salida.with_suffix(".json").write_text(json.dumps(info, ensure_ascii=False, indent=1))
+    salida.with_suffix(".json").write_text(json.dumps(info, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"sin corregir {e0:.1f}/255 · con tu color aprendido, en cuadros que no vio: {e_nv:.1f}/255")
     print("cambio (+ = más):", " · ".join(f"{k} {v:+.3f}" for k, v in cambio.items()))
     if e_nv > e0 * 0.7:

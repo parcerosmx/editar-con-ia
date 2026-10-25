@@ -36,8 +36,8 @@ def ruta(p):
 
 
 def cortes_auto(video, dur):
-    r = subprocess.run(["ffmpeg", "-v", "info", "-i", str(video), "-vf", "scale=180:-2,select='gt(scene,0.3)',showinfo",
-                        "-an", "-f", "null", "-"], capture_output=True, text=True).stderr
+    r = subprocess.run([comun.ffmpeg(), "-v", "info", "-i", str(video), "-vf", "scale=180:-2,select='gt(scene,0.3)',showinfo",
+                        "-an", "-f", "null", "-"], capture_output=True, text=True, encoding="utf-8", errors="replace").stderr
     cs = []
     for t in sorted(float(x) for x in re.findall(r"pts_time:([0-9.]+)", r)):
         if 0.3 < t < dur - 0.3 and (not cs or t - cs[-1] > 0.4):

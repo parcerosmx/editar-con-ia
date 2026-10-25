@@ -157,8 +157,8 @@ def main():
     fc.append("".join(labs) + f"amix=inputs={len(labs)}:normalize=0:duration=first,alimiter=limit=0.95:level=false{norm}[a]")
     comun.ff(*inputs, "-filter_complex", ";".join(fc), "-map", "0:v", "-map", "[a]", "-c:v", "copy",
              "-c:a", "aac", "-b:a", "256k", "-movflags", "+faststart", a.salida)
-    r = subprocess.run(["ffmpeg", "-i", a.salida, "-af", "loudnorm=print_format=summary", "-f", "null", "-"],
-                       capture_output=True, text=True).stderr
+    r = subprocess.run([comun.ffmpeg(), "-i", a.salida, "-af", "loudnorm=print_format=summary", "-f", "null", "-"],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace").stderr
     tot = [l.strip() for l in r.splitlines() if "Input Integrated" in l or "Input True Peak" in l]
     print("\n".join(informe))
     print("total: " + " · ".join(tot))

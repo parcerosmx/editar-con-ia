@@ -5,7 +5,8 @@
 
 Por cada video:
   · RITMO      cuántos cortes hay y cuánto dura cada toma (mediana, la más corta, la más larga, la ráfaga del arranque)
-  · CARA       qué parte del video sale una cara grande a cámara (Vision de macOS, en el cuadro del medio de cada toma)
+  · CARA       qué parte del video sale una cara grande a cámara (Vision de macOS, en el cuadro del medio de cada toma;
+               en Windows no se mide solo: Claude lo cuenta en la hoja de cuadros)
   · VOZ        palabras por minuto, en qué segundo arranca la voz, las pausas entre frases, y si hay un fondo
                continuo (música o ruido) y a cuántos dB queda debajo de la voz
   · TEXTO      en qué parte del video hay texto en pantalla, a qué altura, de qué tamaño, si va en mayúsculas,
@@ -51,9 +52,9 @@ def pct(v, q):
 def cortes(video, dur):
     """Segundos donde cambia el plano (filtro de escenas de ffmpeg sobre el video chico)."""
     pre, fi = comun.entrada(video)
-    r = subprocess.run(["ffmpeg", "-v", "info", *pre, "-i", str(video), "-vf",
+    r = subprocess.run([comun.ffmpeg(), "-v", "info", *pre, "-i", str(video), "-vf",
                         f"{fi},scale=180:-2,select='gt(scene,{UMBRAL_CORTE})',showinfo", "-an", "-f", "null", "-"],
-                       capture_output=True, text=True).stderr
+                       capture_output=True, text=True, encoding="utf-8", errors="replace").stderr
     ts = sorted(float(x) for x in re.findall(r"pts_time:([0-9.]+)", r))
     limpios = []
     for t in ts:                                        # dos «cortes» a menos de 0,2 s son el mismo
@@ -151,8 +152,8 @@ def voz(video, tmp):
 
 
 def volumen(video):
-    r = subprocess.run(["ffmpeg", "-v", "info", "-i", str(video), "-af", "ebur128=peak=true", "-f", "null", "-"],
-                       capture_output=True, text=True).stderr
+    r = subprocess.run([comun.ffmpeg(), "-v", "info", "-i", str(video), "-af", "ebur128=peak=true", "-f", "null", "-"],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace").stderr
     i = re.findall(r"I:\s+(-?[\d.]+) LUFS", r)
     p = re.findall(r"Peak:\s+(-?[\d.]+) dBFS", r)
     return {"lufs": float(i[-1]) if i else None, "pico_dbfs": float(p[-1]) if p else None}
@@ -173,7 +174,7 @@ def hoja(cuadros, destino):
     for k, (im, c) in enumerate(ims):
         x, y = (k % cols) * w, (k // cols) * (h + 26)
         lienzo.paste(im.resize((w, h)), (x, y))
-        etiqueta = f"{c['desde']:.1f}s {c['dura']:.1f}s {'CARA' if c['cara'] else 'apoyo'}"
+        etiqueta = f"{c['desde']:.1f}s {c['dura']:.1f}s {'CARA' if c['cara'] else ('apoyo' if c['cara'] is False else 'cara?')}"
         d.rectangle((x, y + h, x + w, y + h + 26), fill="black" if c["cara"] else "#444")
         d.text((x + 6, y + h + 7), etiqueta, fill="yellow" if c["cara"] else "white")
     lienzo.save(destino, quality=85)
@@ -204,7 +205,7 @@ def medir(video, carpeta_hojas):
     for (a, b), r in zip(elegidas, rutas):
         caras = vis.get(str(r), {}).get("caras", [])
         grande = any(c[3] - c[1] >= CARA_MIN for c in caras)
-        cuadros.append({"ruta": r, "desde": a, "dura": b - a, "cara": grande})
+        cuadros.append({"ruta": r, "desde": a, "dura": b - a, "cara": grande if vis else None})
         if grande:
             t_cara += (b - a) * paso
     # texto en pantalla
@@ -243,10 +244,11 @@ def medir(video, carpeta_hojas):
         "cara": {
             "porcentaje_a_camara": round(100 * t_cara / dur) if vista and dur else None,
             "arranca_con_cara": cuadros[0]["cara"] if vista and cuadros else None,
-            "nota": None if vista else "Vision de macOS no respondió: la cara se mide mirando la hoja.",
+            "nota": None if vista else comun.NOTA_SIN_VISION,
         },
         "texto": {
             "porcentaje_con_texto": round(100 * con_texto / len(segs)) if vista and segs else None,
+            "nota": None if vista else comun.NOTA_SIN_VISION,
             "altura_letra_px_en_1920": round(st.median(alturas)) if alturas else None,
             "centro_vertical_px_en_1920": round(st.median(centros)) if centros else None,
             "mayusculas": (None if not mayus else ("casi todo en MAYÚSCULAS" if st.median(mayus) > 0.8 else

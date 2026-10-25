@@ -75,8 +75,8 @@ def main():
     print(("⚠️ huecos de más de 0,25 s: " + " ".join(f"{h0:.2f}-{h1:.2f}" for h0, h1 in dentro)) if dentro
           else "✅ sin huecos de más de 0,25 s entre palabras")
     print(f"bordes: la voz arranca en {v0:.2f} s y se apaga en {v1:.2f} s (quedan {dur - v1:.2f} s al final)")
-    r = subprocess.run(["ffmpeg", "-v", "info", "-i", f, "-af", "ebur128=peak=true", "-f", "null", "-"],
-                       capture_output=True, text=True).stderr
+    r = subprocess.run([comun.ffmpeg(), "-v", "info", "-i", f, "-af", "ebur128=peak=true", "-f", "null", "-"],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace").stderr
     I = re.findall(r"I:\s+(-?[\d.]+) LUFS", r)
     P = re.findall(r"Peak:\s+(-?[\d.]+) dBFS", r)
     partes = [s[s > ref - 20] for s in np.array_split(db, 3)]
@@ -84,15 +84,15 @@ def main():
     if I:
         print(f"volumen {I[-1]} LUFS, pico {P[-1] if P else '?'} dBFS · voz por tercios "
               f"{ter[0]:.1f} / {ter[1]:.1f} / {ter[2]:.1f} dB" + (" ⚠️ se cansa" if ter[0] - ter[2] > 3 else " ✅ pareja"))
-    r = subprocess.run(["ffmpeg", "-v", "info", "-i", f, "-vf", "scdet=threshold=8", "-an", "-f", "null", "-"],
-                       capture_output=True, text=True).stderr
+    r = subprocess.run([comun.ffmpeg(), "-v", "info", "-i", f, "-vf", "scdet=threshold=8", "-an", "-f", "null", "-"],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace").stderr
     cs = [float(m) for m in re.findall(r"lavfi.scd.time:\s*([\d.]+)", r)]
     cerca = [(c0, c1) for c0, c1 in zip(cs, cs[1:]) if c1 - c0 < 0.3]
     print(f"cambios de imagen ({len(cs)}): {' '.join(f'{c:.2f}' for c in cs[:60])}")
     print(("⚠️ parpadeo: " + " ".join(f"{c0:.2f}/{c1:.2f}" for c0, c1 in cerca)) if cerca
           else "✅ sin parpadeos (ningún par de cambios a menos de 0,3 s)")
-    r = subprocess.run(["ffmpeg", "-v", "info", "-i", f, "-vf", "blackdetect=d=0.03:pix_th=0.06", "-an", "-f", "null", "-"],
-                       capture_output=True, text=True).stderr
+    r = subprocess.run([comun.ffmpeg(), "-v", "info", "-i", f, "-vf", "blackdetect=d=0.03:pix_th=0.06", "-an", "-f", "null", "-"],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace").stderr
     negros = re.findall(r"black_start:([\d.]+)", r)
     print(("⚠️ cuadros negros en: " + " ".join(negros)) if negros else "✅ sin cuadros negros")
 

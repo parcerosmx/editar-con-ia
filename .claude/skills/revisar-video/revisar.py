@@ -7,7 +7,7 @@ POR QUÉ EXISTE
 ═══════════════════════════════════════════════════════════════════════════
 
 Claude no abre video ni audio: lee texto e imágenes. Este script saca las dos
-cosas, todo en este Mac y sin mandar nada a ningún servicio:
+cosas, todo en esta computadora (Mac o Windows) y sin mandar nada a ningún servicio:
 
   · lo que se dice, con su segundo   → whisper.cpp, modelo large-v3-turbo
   · lo que se ve                     → ffmpeg: un cuadro por intervalo y otro en
@@ -47,19 +47,19 @@ from pathlib import Path
 # La carpeta del proyecto: .claude/skills/revisar-video/revisar.py → tres niveles arriba.
 RAIZ = Path(__file__).resolve().parents[3]
 CACHE = Path(os.environ["REVISIONES"]).expanduser() if os.environ.get("REVISIONES") else RAIZ / "proyectos" / "_revisiones"
-# El modelo: el de herramientas/modelos/ (lo baja instalar.sh), o WHISPER_MODELO, o el que ya tenga la Mac.
-_MODELOS = [Path(os.environ["WHISPER_MODELO"]).expanduser()] if os.environ.get("WHISPER_MODELO") else []
-_MODELOS += [RAIZ / "herramientas" / "modelos" / "ggml-large-v3-turbo.bin",
-             Path.home() / ".cache" / "whisper.cpp" / "ggml-large-v3-turbo.bin"]
-MODELO = next((m for m in _MODELOS if m.exists()), _MODELOS[0])
-URL_MODELO = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo.bin"
+# Dónde están los programas y el modelo (Mac o Windows): lo sabe herramientas/comun.py.
+sys.path.insert(0, str(RAIZ / "herramientas"))
+import comun  # noqa: E402
+
+MODELO = comun.modelo_whisper(salir=False) or comun.HERRAMIENTAS / "modelos" / comun.NOMBRE_MODELO
+URL_MODELO = comun.URL_MODELO
 VOCABULARIO = Path(__file__).resolve().parent / "vocabulario.txt"
 
 EXT_VIDEO = {".mp4", ".mov", ".m4v", ".webm", ".mkv", ".avi", ".3gp"}
 EXT_AUDIO = {".m4a", ".mp3", ".wav", ".aac", ".ogg", ".opus", ".flac", ".aif", ".aiff"}
 # Donde cae lo que llega por AirDrop o se baja del navegador.
 DONDE_BUSCAR = ([RAIZ / "material" / c for c in ("02-a-camara", "01-tomas-de-apoyo", "04-referentes")]
-                + [Path.home() / "Downloads", Path.home() / "Desktop", Path.home() / "Movies"])
+                + [Path.home() / "Downloads", Path.home() / "Desktop", Path.home() / "Movies", Path.home() / "Videos"])
 
 POR_HOJA = 12
 MAX_CUADROS = 96      # en videos largos el intervalo se estira para no pasar de aquí
@@ -72,15 +72,8 @@ MULETILLAS = {"eh", "em", "ehm", "mm", "mmm", "ah", "este", "pues", "bueno", "os
 
 
 def herramienta(nombre):
-    """Encuentra un binario aunque Homebrew no esté en el PATH del proceso."""
-    ruta = shutil.which(nombre)
-    if ruta:
-        return ruta
-    for base in ("/opt/homebrew/bin", "/usr/local/bin"):
-        candidato = Path(base) / nombre
-        if candidato.exists():
-            return str(candidato)
-    return None
+    """Encuentra un programa aunque Homebrew o winget no estén en el PATH del proceso."""
+    return comun.herramienta(nombre)
 
 
 FFMPEG, FFPROBE = herramienta("ffmpeg"), herramienta("ffprobe")
@@ -92,7 +85,7 @@ def aviso(texto):
 
 def correr(cmd, cwd=None):
     cmd = [str(c) for c in cmd]
-    r = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, errors="replace")
+    r = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace")
     if r.returncode != 0:
         sys.exit(f"✗ Falló {Path(cmd[0]).name}:\n{r.stderr.strip()[-1500:]}")
     return r
@@ -144,7 +137,7 @@ def hace(segundos):
 def bajar(url):
     ytdlp = herramienta("yt-dlp")
     if not ytdlp:
-        sys.exit("✗ Falta yt-dlp:  brew install yt-dlp")
+        sys.exit(f"✗ Falta yt-dlp. Corre:  {comun.INSTALAR}")
     destino = CACHE / "_descargas"
     destino.mkdir(parents=True, exist_ok=True)
     aviso("· bajando…")
@@ -154,7 +147,7 @@ def bajar(url):
          "--ffmpeg-location", str(Path(FFMPEG).parent),
          "-o", str(destino / "%(extractor)s-%(id)s.%(ext)s"),
          "--print", "after_move:filepath", url],
-        capture_output=True, text=True, errors="replace")
+        capture_output=True, text=True, encoding="utf-8", errors="replace")
     if r.returncode != 0:
         error = r.stderr.strip()
         if re.search(r"log ?in|cookies|private|sign in|authenticat", error, re.I):
@@ -325,13 +318,13 @@ def medir_audio(fuente):
     aviso("· midiendo el audio…")
     r = subprocess.run([FFMPEG, "-hide_banner", "-nostats", "-i", str(fuente), "-vn",
                         "-af", "ebur128=peak=true:framelog=verbose", "-f", "null", "-"],
-                       capture_output=True, text=True, errors="replace")
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
     resumen = r.stderr.rsplit("Summary:", 1)[-1]
     lufs = re.search(r"\bI:\s+(-?[\d.]+|-inf)\s+LUFS", resumen)
     pico = re.search(r"Peak:\s+(-?[\d.]+|-inf)\s+dBFS", resumen)
     r = subprocess.run([FFMPEG, "-hide_banner", "-nostats", "-i", str(fuente), "-vn",
                         "-af", "silencedetect=noise=-35dB:d=0.4", "-f", "null", "-"],
-                       capture_output=True, text=True, errors="replace")
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
     inicios = [float(x) for x in re.findall(r"silence_start: (-?[\d.]+)", r.stderr)]
     fines = [float(x) for x in re.findall(r"silence_end: (-?[\d.]+)", r.stderr)]
 
@@ -367,7 +360,7 @@ def sacar_cuadros(fuente, destino, cada, desde=None, hasta=None, escenas=True):
 
     tiempos, actual = [], None
     seleccion = destino / "_seleccion.txt"
-    for linea in seleccion.read_text(errors="replace").splitlines():
+    for linea in seleccion.read_text(encoding="utf-8", errors="replace").splitlines():
         m = re.match(r"frame:(\d+)\s+pts:\S+\s+pts_time:(\S+)", linea)
         if m:
             actual = {"t": round(float(m.group(2)) + (desde or 0), 2), "cambio": 0.0}
@@ -415,11 +408,12 @@ def armar_hojas(cuadros, origen, destino, orient):
 
 
 def letra(ImageFont, tamano):
-    for ruta in ("/System/Library/Fonts/Supplemental/Arial Bold.ttf", "/System/Library/Fonts/Helvetica.ttc"):
+    ruta = comun.fuente(redonda=False)
+    if ruta:
         try:
             return ImageFont.truetype(ruta, tamano)
         except OSError:
-            continue
+            pass
     return ImageFont.load_default()
 
 
@@ -445,7 +439,7 @@ def hoja_con_hora(grupo, origen, salida, cols, filas, tw, th, Image, ImageDraw, 
 
 def hoja_sin_hora(grupo, origen, salida, cols, filas, tw, th):
     lista = origen / "_lista.txt"
-    lista.write_text("".join(f"file '{c['archivo']}'\n" for c in grupo))
+    lista.write_text("".join(f"file '{c['archivo']}'\n" for c in grupo), encoding="utf-8")
     filtro = (f"scale={tw}:{th}:force_original_aspect_ratio=decrease,"
               f"pad={tw}:{th}:(ow-iw)/2:(oh-ih)/2:color=white,"
               f"tile={cols}x{filas}:padding=8:margin=8:color=white")
@@ -685,12 +679,11 @@ def verificar():
         pillow = None
     whisper = herramienta("whisper-cli")
     filas = [
-        (True, "ffmpeg + ffprobe", FFMPEG and FFPROBE, "bash herramientas/instalar.sh"),
-        (True, "whisper-cli", whisper, "bash herramientas/instalar.sh"),
-        (True, "modelo large-v3-turbo", MODELO if MODELO.exists() else None,
-         "bash herramientas/instalar.sh"),
-        (False, "yt-dlp (para links)", herramienta("yt-dlp"), "brew install yt-dlp"),
-        (False, "Pillow (hora en las hojas)", pillow, "bash herramientas/instalar.sh"),
+        (True, "ffmpeg + ffprobe", FFMPEG and FFPROBE, comun.INSTALAR),
+        (True, "whisper-cli", whisper, comun.INSTALAR),
+        (True, f"modelo {MODELO.name}", MODELO if MODELO.exists() else None, comun.INSTALAR),
+        (False, "yt-dlp (para links)", herramienta("yt-dlp"), comun.INSTALAR),
+        (False, "Pillow (hora en las hojas)", pillow, comun.INSTALAR),
     ]
     falta = False
     for requerido, nombre, listo, arreglo in filas:
@@ -702,7 +695,7 @@ def verificar():
 
 def main():
     if not FFMPEG or not FFPROBE:
-        sys.exit("✗ Falta ffmpeg:  brew install ffmpeg")
+        sys.exit(f"✗ Falta ffmpeg. Corre:  {comun.INSTALAR}")
     orden = sys.argv[1] if len(sys.argv) > 1 else ""
     if orden == "verificar":
         return verificar()

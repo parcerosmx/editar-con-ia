@@ -51,7 +51,7 @@ def main():
     for t in tomas:
         if t["dura"] < 0.5:
             print(f"⚠️ la toma de {t['en']:.2f} s dura {t['dura']:.2f} s: marea")
-    lut = f",lut3d=file='{ruta(cfg['lut'])}'" if cfg.get("lut") else ""
+    lut = f",lut3d=file='{comun.ruta_filtro(ruta(cfg['lut']))}'" if cfg.get("lut") else ""
     ins, fc, last = ["-i", str(base)], [], "0:v"
     for k, t in enumerate(tomas):
         f = ruta(t["archivo"])

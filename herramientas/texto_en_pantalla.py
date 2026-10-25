@@ -19,8 +19,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import comun  # noqa: E402
 
-FUENTES = ["/System/Library/Fonts/Supplemental/Arial Rounded Bold.ttf",
-           "/System/Library/Fonts/Supplemental/Arial Bold.ttf", "/System/Library/Fonts/Helvetica.ttc"]
+FUENTE = comun.fuente()   # Arial Rounded Bold en Mac; Arial Bold en Windows
 
 
 def color(c):
@@ -60,7 +59,7 @@ def main():
     ap.add_argument("--muestra", action="store_true")
     a = ap.parse_args()
     from PIL import Image, ImageDraw, ImageFont
-    fuente_ruta = a.fuente or next((f for f in FUENTES if Path(f).exists()), None)
+    fuente_ruta = a.fuente or FUENTE
     f = ImageFont.truetype(fuente_ruta, a.tam)
     im = Image.new("RGBA", (1080, 1920), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
@@ -83,6 +82,8 @@ def main():
     # ¿tapa una cara? se mira un cuadro en medio del tramo
     cuadro = Path(tmp) / "c.png"
     comun.ff("-ss", f"{(a.desde + a.hasta) / 2:.2f}", "-i", a.video, "-frames:v", "1", "-vf", "scale=1080:1920", cuadro)
+    if not comun.vision_disponible():
+        print(f"· si el texto tapa una cara: {comun.NOTA_SIN_VISION} (o en la copia con --muestra)")
     caras = comun.vision([cuadro]).get(str(cuadro), {}).get("caras", [])
     y0, y1 = a.y / 1920, (a.y + alto) / 1920
     if any(c[1] < y1 and c[3] > y0 for c in caras):

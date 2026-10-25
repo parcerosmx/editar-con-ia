@@ -107,7 +107,7 @@ def main():
         fc.append(f"[0:a]atrim={s0:.4f}:{s1:.4f},asetpts=PTS-STARTPTS,afade=t=in:d=0.003,"
                   f"afade=t=out:st={max(0, d - 0.004):.4f}:d=0.004[a{k}]")
         lab += f"[v{k}][a{k}]"
-    color = f",lut3d=file='{os.path.abspath(a.lut)}'" if a.lut else ""
+    color = f",lut3d=file='{comun.ruta_filtro(os.path.abspath(a.lut))}'" if a.lut else ""
     fc.append(lab + f"concat=n={len(tramos)}:v=1:a=1[vc][a]")
     fc.append(f"[vc]format=yuv420p{color}[v]")
     comun.ff(*pre, "-i", a.video, "-filter_complex", ";".join(fc), "-map", "[v]", "-map", "[a]",
@@ -117,7 +117,7 @@ def main():
     for k in range(len(tramos) - 1):
         acc += tramos[k][1] - tramos[k][0]
         saltos.append(round(acc, 3))
-    Path(os.path.splitext(a.salida)[0] + ".json").write_text(json.dumps(
+    Path(os.path.splitext(a.salida)[0] + ".json").write_text(encoding="utf-8", data=json.dumps(
         {"fuente": a.video, "tramos_fuente": tramos, "saltos": saltos, "fps": fr,
          "nota": "saltos = borde exacto entre dos palabras en la SALIDA; ahí se pegan los cambios de toma"}, indent=1))
     quitado = sum(c1 - c0 for c0, c1 in cortes)

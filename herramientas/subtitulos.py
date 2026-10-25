@@ -29,8 +29,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import comun  # noqa: E402
 
-FUENTES = ["/System/Library/Fonts/Supplemental/Arial Rounded Bold.ttf",
-           "/System/Library/Fonts/Supplemental/Arial Bold.ttf", "/System/Library/Fonts/Helvetica.ttc"]
+FUENTE = comun.fuente()   # Arial Rounded Bold en Mac; Arial Bold en Windows
 PALABRAS_FUNCION = {"de", "la", "el", "los", "las", "que", "y", "a", "al", "del", "con", "en", "se", "un", "una",
                     "lo", "es", "no", "nos", "va", "su", "sus", "por", "para", "mi", "tu"}
 ANCHO, ALTO, K = 1080, 360, 2
@@ -50,7 +49,7 @@ def main():
     ap.add_argument("carpeta")
     ap.add_argument("--video", required=True, help="el video (da la duración y los cuadros por segundo)")
     ap.add_argument("--salida", help="pegar los subtítulos sobre el video y guardarlo aquí")
-    ap.add_argument("--fuente", help="archivo .ttf/.otf (por defecto una redonda y gruesa de la Mac)")
+    ap.add_argument("--fuente", help="archivo .ttf/.otf (por defecto una redonda y gruesa del sistema)")
     ap.add_argument("--tam", type=int, default=60)
     ap.add_argument("--color", default="#FFFFFF")
     ap.add_argument("--resaltar", help="color de la palabra que se está diciendo (opcional)")
@@ -69,7 +68,7 @@ def main():
     from PIL import Image, ImageDraw, ImageFont
     if not (205 <= a.y - a.tam // 2 and a.y + a.tam // 2 <= 1550):
         print("⚠️ el subtítulo queda fuera de la zona segura (y entre 205 y 1550): la interfaz de la red lo puede tapar")
-    fuente = a.fuente or next((f for f in FUENTES if Path(f).exists()), None)
+    fuente = a.fuente or FUENTE
     if not fuente:
         sys.exit("✗ No encontré una fuente. Pasa una con --fuente ruta.ttf")
     dur = comun.duracion(a.video)
