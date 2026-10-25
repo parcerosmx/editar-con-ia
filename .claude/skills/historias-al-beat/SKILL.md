@@ -8,6 +8,8 @@ description: Arma historias de Instagram o Facebook (9:16, ~15–20 s) con tomas
 Regla de oro: el dueño pasa las tomas y dice qué quiere anunciar; yo elijo los tramos, propongo el texto y 3
 canciones, armo, y **él aprueba**. Nada se publica.
 
+> **En Windows**, donde dice `.venv/bin/python` va `.venv/Scripts/python.exe`; lo demás es igual.
+
 ## 1 · Qué anuncia y el texto
 Una o dos líneas cortas, arriba (la interfaz tapa ~250 px arriba y ~330 abajo). Datos del negocio (horario,
 dirección, cómo pedir) **sólo como el dueño los dé o como estén en su hoja de estilo**, nunca de memoria. Propón

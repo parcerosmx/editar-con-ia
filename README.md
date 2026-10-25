@@ -1,6 +1,6 @@
 # Editar con IA
 
-**Edita tus Reels y TikToks con Claude Code, en tu Mac, con tu propio estilo.**
+**Edita tus Reels y TikToks con Claude Code, en tu Mac o tu PC con Windows, con tu propio estilo.**
 
 Para dueños de restaurantes, cafeterías, taquerías, panaderías y cualquier negocio de comida que quiere
 publicar videos sin pasarse la noche editando. Tú grabas con el celular y eliges; la IA corta, mide, arma
@@ -12,11 +12,12 @@ Hecho por **Mao Pinzón**, ingeniero de software con restaurante · [maopinzon.c
 
 ## Cómo se usa, en 5 pasos
 
-**1 · La carpeta.** Instala la app de Claude en tu Mac y entra a la pestaña **Code**. Pega el
-[prompt de instalación](PROMPT-DE-INSTALACION.md): Claude baja esta carpeta a tu Mac y te explica todo.
+**1 · La carpeta.** Instala la app de Claude en tu computadora y entra a la pestaña **Code**. Pega el
+[prompt de instalación](PROMPT-DE-INSTALACION.md): Claude ve si tu computadora es Mac o Windows, baja esta
+carpeta y te explica todo.
 
 **2 · Las herramientas.** Claude te dice qué va a instalar y te pregunta antes. Son programas gratis que
-corren en tu Mac (ffmpeg para el video, Whisper para entender lo que se dice). Al final corre un chequeo
+corren en tu computadora (ffmpeg para el video, Whisper para entender lo que se dice). Al final corre un chequeo
 y te dice ✅ o ❌. Tarda de 10 a 20 minutos, casi todo es esperar la descarga.
 
 **3 · Tu estilo.** Pon de 3 a 5 videos que te gusten en `material/04-referentes/` (tuyos o de otros) y dile
@@ -46,9 +47,10 @@ calidad. **Lo subes tú**, cuando quieras.
 
 ## Qué necesitas
 
-- Una **Mac** (con chip M1 o más nueva va mejor; probado en macOS 15).
-- La app de **Claude** con un plan de pago (Pro o Max), que incluye Claude Code.
-- ~3 GB libres en el disco para las herramientas, más el espacio de tus videos.
+- Una **Mac** (con chip M1 o más nueva va mejor; probado en macOS 15) **o una PC con Windows 10/11 de 64 bits**.
+- La app de **Claude** con un plan de pago (Pro o Max), que incluye Claude Code. En Windows, Claude Code usa
+  Git para Windows: si no lo tienes, Claude te ofrece instalarlo.
+- ~5 GB libres en el disco para las herramientas, más el espacio de tus videos.
 - Tus tomas, grabadas en vertical con el celular.
 
 ## Lo que NO hace
@@ -60,7 +62,21 @@ calidad. **Lo subes tú**, cuando quieras.
   decides tú. Por eso te pide escuchar cada unión, con su segundo.
 - **No reemplaza tu gusto.** Elegir la toma, la canción y el gancho es tuyo: te da opciones.
 - **No usa música con derechos de otros.** Usa música libre de derechos o la de la app al subir.
-- No corre en Windows tal cual (usa herramientas de la Mac, como Vision para detectar caras y textos).
+
+## Mac y Windows: qué cambia
+
+| | Mac | Windows |
+|---|---|---|
+| Instalar | `bash herramientas/instalar.sh` (Homebrew) | `powershell -ExecutionPolicy Bypass -File herramientas\instalar.ps1` (winget) |
+| Chequeo | `bash herramientas/chequeo.sh` | `powershell -ExecutionPolicy Bypass -File herramientas\chequeo.ps1` |
+| Whisper (lo que se dice) | Homebrew | el programa oficial de whisper.cpp, en `herramientas\whisper\` |
+| Cuánto sale tu cara y el texto en pantalla | se miden solos (Vision de macOS) | **no se miden solos**: Claude los cuenta mirando la hoja de cuadros |
+| Si un texto tapa una cara | avisa solo | lo revisas en la copia de muestra |
+| Voz IA local (opcional) | `instalar.sh --voz` | todavía no (la «mejora de voz» de CapCut da algo parecido) |
+| Leer tu proyecto de CapCut | probado | sin probar |
+
+Todo lo demás (cortar, quitar pausas, subtítulos, mezcla, entrega, página de revisión) es igual. La prueba
+de punta a punta corre sola en GitHub en las dos, cada vez que cambia algo.
 
 ## Lo que aprendí editando así (y lo que me costó)
 
@@ -83,11 +99,11 @@ evidencia. Son **lo que me funcionó a mí**, no una ley: todavía no las crucé
 
 ## Para los curiosos
 
-- Cada script de `herramientas/` tiene `--help`. Todo corre en tu Mac; sólo se conecta a internet para
-  instalar y para bajar un video cuando le das un link.
-- `bash herramientas/chequeo.sh` arma un video de prueba de 6 s (con la voz de la Mac, sin material de nadie)
-  y lo pasa por todo el proceso.
-- `bash herramientas/instalar.sh --voz` agrega una IA local para mejorar la voz (opcional, ~2–5 GB).
+- Cada script de `herramientas/` tiene `--help`. Todo corre en tu computadora; sólo se conecta a internet
+  para instalar y para bajar un video cuando le das un link.
+- El chequeo arma un video de prueba de 6 s (con la voz de la Mac o de Windows, sin material de nadie) y lo
+  pasa por todo el proceso.
+- En Mac, `bash herramientas/instalar.sh --voz` agrega una IA local para mejorar la voz (opcional, ~2–5 GB).
 
 ## Licencia
 

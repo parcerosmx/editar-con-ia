@@ -11,6 +11,8 @@ medir, y con opciones para elegir, no con preguntas abiertas.
 
 Dimensiona en una línea: 🟢 3 videos propios · 🟡 5 referentes con links · 🔴 más de 5 (propón quedarse con 5).
 
+> **En Windows**, donde dice `.venv/bin/python` va `.venv/Scripts/python.exe`; lo demás es igual.
+
 ## 1 · Juntar los videos (lo único que hace el dueño)
 
 - Archivos: que los ponga en `material/04-referentes/` (o que diga dónde están; «el último» también sirve).
@@ -43,6 +45,9 @@ minuto, pausas, fondo de música bajo la voz), **sonido** (LUFS) y **color** (lu
 
 **Revisa las hojas** `proyectos/_estilo/tomas-*.jpg` (cada toma marcada CARA o apoyo): Vision cuenta como
 «cara» cualquier cara grande (un futbolista en la tele, alguien de fondo). Corrige el % si hace falta y dilo.
+**En Windows no hay Vision**: cara y texto salen «no medido» y las tomas, `cara?`. Cuéntalos tú en la hoja (cada
+toma dice su segundo y su duración: suma las de cara a cámara y divide entre la duración) y, para el texto en
+pantalla, mira `revisar-video`. Dile al dueño que esos dos números los contaste mirando, no medidos.
 
 **Si edita en CapCut**: `.venv/bin/python herramientas/leer_capcut.py "<nombre del proyecto>"` lee su proyecto
 sin tocarlo y dice cuánto duran sus piezas y cuánto encima al cambiar de toma. Es la mejor fuente: su propio corte.

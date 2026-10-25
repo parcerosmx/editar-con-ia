@@ -1,7 +1,7 @@
 # Editar con IA — instrucciones para Claude
 
 Este proyecto edita videos cortos verticales (Reels, TikTok, historias) para un negocio de comida, con Claude
-Code en una Mac. Quien lo usa **no es técnico**: habla en español de México, con palabras simples y frases
+Code en una Mac o en Windows. Quien lo usa **no es técnico**: habla en español de México, con palabras simples y frases
 cortas. Nada de jerga (si hace falta un término, se explica en media línea).
 
 ## La regla de oro
@@ -47,16 +47,28 @@ del dueño se anota ahí, con fecha: así el siguiente video ya sale con ella.
 | `material/00-finales/` | lo ya publicado, para reusar o inspirarse |
 | `proyectos/<video>/` | el trabajo de cada video (versiones, revisiones, entregas) |
 | `estilo/` | la hoja de estilo y su color (`mi-color.cube`, si lo aprendió) |
-| `herramientas/` | los scripts (`--help` en cada uno), `instalar.sh` y `chequeo.sh` |
+| `herramientas/` | los scripts (`--help` en cada uno); instalar y chequeo (`.sh` Mac, `.ps1` Windows) |
 | `ejemplos/` | JSON de ejemplo para cada script |
 
 `material/` y `proyectos/` **no se suben a git**: son del dueño.
 
 ## Cómo se trabaja
 
-- Python: **`.venv/bin/python`** (si no existe, `/usr/bin/python3`). Si algo falta: `bash herramientas/chequeo.sh`
-  y, si hace falta, `bash herramientas/instalar.sh` (pregunta antes de instalar; con `--si` si el dueño ya dijo que sí).
-- Homebrew pide la contraseña de la Mac: **Claude nunca la escribe**; le da al dueño el comando para pegarlo en Terminal.
+- **Primero, qué computadora es** (Mac o Windows) y usar los comandos de esa:
+
+  | | Mac | Windows (también desde Git Bash, que es donde Claude Code corre los comandos) |
+  |---|---|---|
+  | Python del proyecto | `.venv/bin/python` | `.venv/Scripts/python.exe` |
+  | Chequeo | `bash herramientas/chequeo.sh` | `powershell -ExecutionPolicy Bypass -File herramientas/chequeo.ps1` |
+  | Instalar | `bash herramientas/instalar.sh --si` | `powershell -ExecutionPolicy Bypass -File herramientas/instalar.ps1 -Si` |
+
+  Los instaladores preguntan antes; `--si`/`-Si` sólo cuando el dueño ya dijo que sí. En las skills los comandos
+  dicen `.venv/bin/python`: en Windows se cambia por `.venv/Scripts/python.exe`, lo demás es igual.
+- **Claude nunca escribe contraseñas.** Homebrew pide la de la Mac: se le da al dueño el comando para pegarlo en
+  Terminal. En Windows, si sale «¿Permitir cambios?», lo acepta el dueño.
+- En Windows no hay Vision: el % de cara y el texto en pantalla salen «no medido» y **Claude los cuenta en la hoja
+  de cuadros** (`medir_estilo.py --hojas`, `hoja_cuadros.py`). Los scripts encuentran ffmpeg y whisper solos
+  (`herramientas/comun.py`; `python herramientas/comun.py` dice qué encontró).
 - Dimensionar cada tarea en una línea (🟢 chica · 🟡 media · 🔴 grande) y avisar si crece.
 - Un paso a la vez; cada paso termina con algo que el dueño ve: una copia ligera, una hoja de cuadros o la página
   de revisión (`storyboard.py`, con botones «Se queda · Cambiar · Quitar» y «Copiar mis respuestas»).

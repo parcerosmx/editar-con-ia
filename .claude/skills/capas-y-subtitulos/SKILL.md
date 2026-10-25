@@ -10,6 +10,8 @@ mandan sobre los de aquí (que son los de `estilo/ejemplo-mao.md`).
 
 Regla de oro: yo mido, propongo y armo una muestra; **el dueño aprueba**. La música la elige él entre 3. Nada se publica.
 
+> **En Windows**, donde dice `.venv/bin/python` va `.venv/Scripts/python.exe`; lo demás es igual.
+
 ## El orden (de menos a más esfuerzo, y el gancho de texto AL FINAL)
 riser → letreros con datos → subtítulos → efectos y música → **gancho de texto, lo último** (con el video ya armado).
 Cada parte cierra con una versión numerada (`<video>_v1`, `_v2`…) en `proyectos/<video>/`.
@@ -20,7 +22,7 @@ Cada parte cierra con una versión numerada (`<video>_v1`, `_v2`…) en `proyect
 ## 1 · Plan de capas (se acuerda antes de hacer nada)
 Una tabla corta: **momento · palabra que lo dispara · capa**. Lo subjetivo se marca como muestra opcional.
 Reglas: nunca tres letreros seguidos (fecha, lugar y hora en uno solo); mientras hay letrero, no hay subtítulo;
-nada sobre una cara; todo dentro de la zona segura (y entre 205 y 1550 en 1920).
+nada sobre una cara (en Windows no se avisa solo: míralo en la muestra); todo dentro de la zona segura (y entre 205 y 1550 en 1920).
 
 ## 2 · Tiempos de cada palabra
 ```bash

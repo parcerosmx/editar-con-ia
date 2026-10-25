@@ -15,6 +15,8 @@ Dimensiona en una línea (🟢 una toma corrida · 🟡 varias tomas y tomas de 
 y di en qué paso vamos. **Un paso a la vez; cada paso termina con algo que el dueño ve** (un video ligero o la
 página de revisión). Todo el trabajo va en `proyectos/<nombre-del-video>/`.
 
+> **En Windows**, donde dice `.venv/bin/python` va `.venv/Scripts/python.exe`; lo demás es igual.
+
 ## Los pasos
 
 ### 1 · Ver el material

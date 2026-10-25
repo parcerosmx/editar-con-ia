@@ -6,17 +6,20 @@ description: Primera opción para revisar un video o un audio como si lo vieras 
 # Revisar un video
 
 No puedo abrir video ni audio: leo **texto** e **imágenes**. `revisar.py` convierte el video en las dos
-cosas, todo en esta Mac. Nada sale a internet, salvo la descarga cuando el dueño da un link.
+cosas, todo en esta computadora (Mac o Windows). Nada sale a internet, salvo la descarga cuando el dueño da un link.
 
 Al dueño le toca sólo pasar el video. Lo demás lo hago yo, y pregunto sólo lo que no puedo deducir (por
 ejemplo, contra qué guion comparar, si no es obvio).
+
+> **En Windows**, donde dice `.venv/bin/python` va `.venv/Scripts/python.exe`; lo demás es igual.
 
 ## 1 · Preparar
 
 ```bash
 .venv/bin/python .claude/skills/revisar-video/revisar.py <archivo | link | ultimo> [--guion hablado.txt]
 ```
-(Si no existe `.venv`, `/usr/bin/python3`. Si falta algo: `revisar.py verificar` o `bash herramientas/instalar.sh`.)
+(Si no existe `.venv`: `/usr/bin/python3` en Mac, `python` en Windows. Si falta algo: `revisar.py verificar` y el
+instalador: `bash herramientas/instalar.sh` en Mac, `powershell -ExecutionPolicy Bypass -File herramientas/instalar.ps1` en Windows.)
 
 | Entrada | Qué pasa |
 |---|---|
