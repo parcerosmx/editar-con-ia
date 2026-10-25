@@ -58,7 +58,9 @@ function Refrescar-Path {
     $extra += Get-ChildItem -Path (Join-Path $env:LOCALAPPDATA 'Microsoft\WinGet\Packages') -Directory -Filter 'Gyan.FFmpeg*' -ErrorAction SilentlyContinue |
         ForEach-Object { Get-ChildItem $_.FullName -Directory -ErrorAction SilentlyContinue } |
         ForEach-Object { Join-Path $_.FullName 'bin' }
-    $todo = @($maq, $usr) + $extra | Where-Object { $_ -and (Test-Path $_) }
+    # lo de esta ventana va primero (ahí están, p. ej., los Python que ya tenía la computadora)
+    $todo = @($env:Path -split ';') + @($maq -split ';') + @($usr -split ';') + $extra |
+        Where-Object { $_ -and (Test-Path $_) } | Select-Object -Unique
     $env:Path = ($todo -join ';')
 }
 
@@ -198,11 +200,15 @@ if (-not $whisper) {
     try {
         $cab = @{ 'User-Agent' = 'editar-con-ia' }
         if ($env:GITHUB_TOKEN) { $cab['Authorization'] = "Bearer $env:GITHUB_TOKEN" }
-        $rel = Invoke-RestMethod -Uri 'https://api.github.com/repos/ggml-org/whisper.cpp/releases/latest' -Headers $cab -UseBasicParsing
-        $url = ($rel.assets | Where-Object { $_.name -eq 'whisper-bin-x64.zip' } | Select-Object -First 1).browser_download_url
-        if ($url) { Nota "versión $($rel.tag_name)" }
+        # La «última versión» de whisper.cpp a veces sale sin programas: se toma la más nueva que traiga el zip.
+        $rels = Invoke-RestMethod -Uri 'https://api.github.com/repos/ggml-org/whisper.cpp/releases?per_page=15' -Headers $cab -UseBasicParsing
+        foreach ($rel in $rels) {
+            $a = $rel.assets | Where-Object { $_.name -eq 'whisper-bin-x64.zip' } | Select-Object -First 1
+            if ($a) { $url = $a.browser_download_url; Nota "versión $($rel.tag_name)"; break }
+        }
     } catch { Depurar "API de GitHub: $_" }
-    if (-not $url) { $url = 'https://github.com/ggml-org/whisper.cpp/releases/latest/download/whisper-bin-x64.zip' }
+    # si GitHub no contestó: una versión que ya se probó
+    if (-not $url) { $url = 'https://github.com/ggml-org/whisper.cpp/releases/download/b5454/whisper-bin-x64.zip' }
     $zip = Join-Path $WHISPER_DIR 'whisper-bin-x64.zip'
     if (-not (Bajar $url $zip)) { Mal 'No se pudo bajar whisper.cpp (¿internet?). Vuelve a correr esto.'; exit 1 }
     try { Expand-Archive -Path $zip -DestinationPath $WHISPER_DIR -Force } catch { Mal "No se pudo abrir el zip de whisper.cpp: $_"; exit 1 }
